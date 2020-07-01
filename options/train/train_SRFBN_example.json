@@ -19,8 +19,8 @@
             "n_workers": 4,
             "batch_size": 16,
             "LR_size": 40,
-            "use_flip": true,
-            "use_rot": true,
+            "use_flip": false,
+            "use_rot": false,
             "noise": "."
         },
         "val": {
