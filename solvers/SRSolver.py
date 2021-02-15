@@ -1,4 +1,4 @@
-﻿import os
+import os
 from collections import OrderedDict
 import pandas as pd
 import scipy.misc as misc
@@ -279,6 +279,7 @@ class SRSolver(BaseSolver):
                                                                 filename.replace('last_ckp','epoch_%d_ckp'%epoch)))
 
             torch.save(ckp, filename.replace('last_ckp','epoch_%d_ckp'%epoch))
+        # import IPython; IPython.embed(); exit(1)
 
 
     def load(self):
@@ -292,15 +293,24 @@ class SRSolver(BaseSolver):
             print('===> Loading model from [%s]...' % model_path)
             if self.is_train:
                 checkpoint = torch.load(model_path)
-                self.model.load_state_dict(checkpoint['state_dict'])
-
-                if self.opt['solver']['pretrain'] == 'resume':
-                    self.cur_epoch = checkpoint['epoch'] + 1
-                    self.optimizer.load_state_dict(checkpoint['optimizer'])
-                    self.best_pred = checkpoint['best_pred']
-                    self.best_epoch = checkpoint['best_epoch']
-                    self.records = checkpoint['records']
-
+                # self.model.load_state_dict(checkpoint['state_dict'])
+                # added this because the pretrained networks don't provide the different dict information but just the state_dict
+                #when I continue training then the correct dict is present and can be processed from code correctly
+                if 'state_dict' in checkpoint.keys():   
+                  if self.opt['solver']['pretrain'] == 'resume':
+                      self.cur_epoch = checkpoint['epoch'] + 1
+                      self.optimizer.load_state_dict(checkpoint['optimizer'])
+                      self.best_pred = checkpoint['best_pred']
+                      self.best_epoch = checkpoint['best_epoch']
+                      self.records = checkpoint['records']
+                else:
+                  self.model.load_state_dict(checkpoint)
+                  # #initialize the values here randomly to get started and don't get an error later
+                  # self.cur_epoch = 0
+                  # self.optimizer.load_state_dict(checkpoint['optimizer'])
+                  # self.best_pred = 40
+                  # self.best_epoch = 0
+                  # self.records = checkpoint['records']
             else:
                 checkpoint = torch.load(model_path)
                 if 'state_dict' in checkpoint.keys(): checkpoint = checkpoint['state_dict']
