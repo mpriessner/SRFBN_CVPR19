@@ -44,6 +44,13 @@ def convert_gray3RGB(img):
     RGB[:,:,2] = img
     return RGB
 
+def float16_to_uint8(img):	
+    #not working?!
+    info = np.iinfo(img.dtype) # Get the information of the incoming image type
+    data = img.astype(np.float16) / info.max # normalize the data to 0 - 1
+    data = 225 * data # Now scale by 255
+    img = data.astype(np.uint8)
+    return img
 
 def save_HR_LR(img, size_ratio, path, idx, scale, save_HR_path, save_LR_path):
 		# HR_img = misc.imresize(img, size, interp='bicubic')
@@ -57,6 +64,8 @@ def save_HR_LR(img, size_ratio, path, idx, scale, save_HR_path, save_LR_path):
 
     img_path = path.split('/')[-1].split('.')[0]  + '-ds-' + str(idx) + '.png'
     x_downscale_img_path = path.split('/')[-1].split('.')[0] + '-ds-' + str(idx) + '.png'
+    # HR_img = float16_to_uint8(HR_img)
+    # x_downscale_img = float16_to_uint8(x_downscale_img)
 
     io.imsave(save_HR_path + '/' + img_path, HR_img)
     io.imsave(save_LR_path + '/' + x_downscale_img_path, x_downscale_img)
@@ -113,7 +122,7 @@ def change_train_GMFN_file(scale_factor, HR_x_scale_folder, LR_x_scale_folder, H
                    if pretrain == "null":
                       new_file.write(f'        "pretrain": null,\n')
                    else:
-                      new_file.write(f'        "pretrain": {pretrain},\n')
+                      new_file.write(f'        "pretrain": "{pretrain}",\n')
                 elif counter ==59:
                     pretrain_new = "/content/SRFBN_CVPR19/Experiments/GMFN_in3f64_template/epochs/Best_ckp_new.pth"
                     copyfile(pretrained_path, pretrain_new)
