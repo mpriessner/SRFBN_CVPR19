@@ -8,8 +8,20 @@ from tempfile import mkstemp
 from os import fdopen, remove
 from shutil import move, copymode
 from shutil import copyfile
+from datetime import datetime
 
 
+def make_folder_with_date(save_location, name):
+  from datetime import datetime
+
+  today = datetime.now()
+  if today.hour < 12:
+    h = "00"
+  else:
+    h = "12"
+  sub_save_location = save_location + "/" + today.strftime('%Y%m%d')+ "_"+ today.strftime('%H%M%S')+ "_%s"%name
+  os.mkdir(sub_save_location)
+  return sub_save_location
 
 def correct_channels(img):
   '''For 2D + T (with or without RGB) a artificial z channel gets created'''
@@ -30,11 +42,40 @@ def correct_channels(img):
   return img, use_RGB
     
 
-def load_img(path):
-  # correct images to a 4D or 3D or 5D dataset
-  img = io.imread(path)
-  img, use_RGB = correct_channels(img)
-  return img, use_RGB
+
+def load_img(img_path):
+    """loads the image converts it into a 4D dataset and returns all the information of the image"""
+    img = io.imread(img_path)
+    img, _ = correct_channels(img)
+    nr_of_channels = len(img.shape)
+    if img.shape[-1]==3:
+      use_RGB = True
+      if nr_of_channels ==4:
+        t, y_dim, x_dim, c = img.shape 
+        z = 0
+      if nr_of_channels ==5:
+       t, z, y_dim, x_dim, c = img.shape 
+      print("This image will be processed as a RGB image")
+    else:
+      use_RGB = False
+      if nr_of_channels ==3:
+        t, y_dim, x_dim = img.shape 
+        c = 0
+        z = 0
+      if nr_of_channels ==4:
+        t, z, y_dim, x_dim = img.shape 
+        c = 0
+    print("The image dimensions are: " + str(img.shape))
+    return t, z, y_dim,x_dim, c, img, use_RGB, nr_of_channels
+
+def convert(img, target_type_min, target_type_max, target_type):
+  # this function converts images from float32 to unit8 
+    imin = img.min()
+    imax = img.max()
+    a = (target_type_max - target_type_min) / (imax - imin)
+    b = target_type_max - a * imax
+    new_img = (a * img + b).astype(target_type)
+    return new_img
 
 def convert_gray3RGB(img):
     print("Image dimensions are:{}".format(img.shape))  # (x, y)
@@ -124,7 +165,7 @@ def change_train_GMFN_file(scale_factor, HR_x_scale_folder, LR_x_scale_folder, H
                    else:
                       new_file.write(f'        "pretrain": "{pretrain}",\n')
                 elif counter ==59:
-                    pretrain_new = "/content/SRFBN_CVPR19/Experiments/GMFN_in3f64_template/epochs/Best_ckp_new.pth"
+                    pretrain_new = "/content/SRFBN_CVPR19/experiments/GMFN_in3f64_template/epochs/Best_ckp_new.pth"
                     copyfile(pretrained_path, pretrain_new)
                     new_file.write(f'        "pretrained_path": "{pretrain_new}",\n')
                 else:
