@@ -8,6 +8,11 @@ from utils import util
 from solvers import create_solver
 from data import create_dataloader
 from data import create_dataset
+try:
+  import sys
+  _ = (sys.path.append("/usr/local/lib/python3.6/site-packages"))
+except:
+  pass
 
 
 def main():
