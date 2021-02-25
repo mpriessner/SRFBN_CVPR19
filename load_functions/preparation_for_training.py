@@ -9,6 +9,8 @@ from os import fdopen, remove
 from shutil import move, copymode
 from shutil import copyfile
 from datetime import datetime
+import os
+import numpy as np
 
 
 def make_folder_with_date(save_location, name):
