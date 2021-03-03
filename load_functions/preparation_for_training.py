@@ -47,7 +47,7 @@ def correct_channels(img):
 
 def load_img(img_path):
     """loads the image converts it into a 4D dataset and returns all the information of the image"""
-    img = io.imread(img_path)
+    img = io.imread(img_path).astype(np.uint8)
     img, _ = correct_channels(img)
     nr_of_channels = len(img.shape)
     if img.shape[-1]==3:
